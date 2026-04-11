@@ -303,6 +303,7 @@ export default class GameScene extends Phaser.Scene {
     if (this.player.x > this.levelData.doorX + 80) {
       // Level complete!
       const currentLevel = this.game.registry.get('currentLevel') || 1;
+      this.game.registry.set('completedLevel', currentLevel);
       this.game.registry.set('coinsEarned', this.player.coins - this.coinsAtStart);
       this.game.registry.set('levelScore', this.levelScore);
       this.game.registry.set('playerHealth', this.player.health);

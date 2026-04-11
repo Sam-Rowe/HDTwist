@@ -1,4 +1,3 @@
-import { CHARACTER_DATA } from '../config.js';
 
 export default class BootScene extends Phaser.Scene {
   constructor() {

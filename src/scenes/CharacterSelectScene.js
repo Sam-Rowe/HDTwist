@@ -90,7 +90,7 @@ export default class CharacterSelectScene extends Phaser.Scene {
     zone.on('pointerdown', () => {
       this.selectedCharacter = charKey;
       this.game.registry.set('selectedCharacter', charKey);
-      if (!this.game.registry.get('coins')) {
+      if (this.game.registry.get('coins') === undefined || this.game.registry.get('coins') === null) {
         this.game.registry.set('coins', 0);
         this.game.registry.set('upgrades', { jump: 0, weapon: 0, armor: 0, skin: 0 });
         this.game.registry.set('currentLevel', 1);

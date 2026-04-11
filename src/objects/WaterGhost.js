@@ -51,6 +51,7 @@ export default class WaterGhost extends Phaser.Physics.Arcade.Sprite {
     const dx = player.x - this.x;
     const dy = player.y - this.y;
     const len = Math.sqrt(dx * dx + dy * dy);
+    if (len === 0) return;
     const speed = 200;
     const proj = new Projectile(this.scene, this.x, this.y, 'proj_ghost', {
       damage: this.damage, speed,

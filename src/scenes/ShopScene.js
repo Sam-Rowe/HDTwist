@@ -46,16 +46,28 @@ export default class ShopScene extends Phaser.Scene {
     }).setOrigin(0.5).setInteractive({ useHandCursor: true });
     closeBtn.on('pointerover', () => closeBtn.setStyle({ fill: '#ffff88' }));
     closeBtn.on('pointerout', () => closeBtn.setStyle({ fill: '#ffffff' }));
-    closeBtn.on('pointerdown', () => {
-      this.scene.stop('ShopScene');
-      this.scene.resume('GameScene');
-    });
+    closeBtn.on('pointerdown', this._closeShop, this);
 
     // ESC to close
-    this.input.keyboard.once('keydown-ESC', () => {
-      this.scene.stop('ShopScene');
-      this.scene.resume('GameScene');
-    });
+    this._boundHandleEsc = this._boundHandleEsc || this._handleEscKey.bind(this);
+    this._boundShutdownHandler = this._boundShutdownHandler || this._onShutdown.bind(this);
+    this.input.keyboard.on('keydown-ESC', this._boundHandleEsc);
+    this.events.once('shutdown', this._boundShutdownHandler);
+  }
+
+  _closeShop() {
+    this.scene.stop('ShopScene');
+    this.scene.resume('GameScene');
+  }
+
+  _handleEscKey() {
+    this._closeShop();
+  }
+
+  _onShutdown() {
+    if (this.input && this.input.keyboard && this._boundHandleEsc) {
+      this.input.keyboard.off('keydown-ESC', this._boundHandleEsc);
+    }
   }
 
   _createUpgradeRow(cx, y, key, upg) {

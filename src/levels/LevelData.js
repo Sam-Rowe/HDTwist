@@ -1034,7 +1034,7 @@ export const LEVELS = [
       { x: 4950, y: 230 }, { x: 5500, y: 330 }
     ],
     npcs: [
-      { x: 100, y: 640, dialog: ['THIS IS IT! The final battle!', 'The ultimate boss has THREE phases!', 'You have come so far...', 'FINISH WHAT YOU STARTED!'] }
+      { x: 100, y: 640, dialog: ['THIS IS IT! The final battle!', 'The ultimate boss has TWO phases!', 'You have come so far...', 'FINISH WHAT YOU STARTED!'] }
     ],
     doorX: 6250,
     hasBoss: true,

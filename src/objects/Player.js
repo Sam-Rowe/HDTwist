@@ -25,7 +25,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.invincibleTimer = null;
     this.facingRight = true;
     this.isOnGround = false;
-    this.justJumpedOverBarrel = false;
 
     // Special power
     this.specialActive = false;
@@ -40,10 +39,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     // Fire cooldown
     this.canFire = true;
     this.fireRate = 400;
-
-    // Barrel jump tracking
-    this.barrelJumpZones = [];
-    this.barrelsJumped = new Set();
 
     scene.add.existing(this);
     scene.physics.add.existing(this);

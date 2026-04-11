@@ -113,6 +113,7 @@ export default class Boss extends Phaser.Physics.Arcade.Sprite {
     const dx = player.x - this.x;
     const dy = player.y - this.y;
     const len = Math.sqrt(dx * dx + dy * dy);
+    if (len === 0) return;
     const speed = 250;
     const proj = new Projectile(this.scene, this.x, this.y, 'proj_king', {
       damage: this.damage, speed,

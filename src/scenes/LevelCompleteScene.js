@@ -7,8 +7,8 @@ export default class LevelCompleteScene extends Phaser.Scene {
 
   create() {
     const { width, height } = this.cameras.main;
-    const prevLevel = (this.game.registry.get('currentLevel') || 2) - 1;
-    const colorIdx = Math.min(prevLevel - 1, LEVEL_COLORS.length - 1);
+    const completedLevel = this.game.registry.get('completedLevel') || (this.game.registry.get('currentLevel') || 2) - 1;
+    const colorIdx = Math.min(completedLevel - 1, LEVEL_COLORS.length - 1);
     const colors = LEVEL_COLORS[colorIdx];
     const coinsEarned = this.game.registry.get('coinsEarned') || 0;
     const score = this.game.registry.get('score') || 0;
@@ -37,7 +37,6 @@ export default class LevelCompleteScene extends Phaser.Scene {
     }
 
     // "LEVEL COMPLETE!" text
-    const brightness = Math.min(1, 0.3 + prevLevel / 20);
     // Levels 16+ use vibrant neon colours — switch to bright yellow text for contrast
     const textColor = colorIdx >= 15 ? '#ffff00' : '#ffffff';
     const strokeColor = colors.accent;
@@ -47,7 +46,7 @@ export default class LevelCompleteScene extends Phaser.Scene {
       stroke: `#${strokeColor.toString(16).padStart(6, '0')}`, strokeThickness: 6
     }).setOrigin(0.5);
 
-    this.add.text(width / 2, 260, `Level ${prevLevel} - Cleared!`, {
+    this.add.text(width / 2, 260, `Level ${completedLevel} - Cleared!`, {
       fontSize: '28px', fill: '#aaaacc'
     }).setOrigin(0.5);
 
@@ -68,7 +67,7 @@ export default class LevelCompleteScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     // Next level / end button
-    const isLastLevel = prevLevel >= 20;
+    const isLastLevel = completedLevel >= 20;
     const btnText = isLastLevel ? '🏆 YOU WIN! Play Again' : '▶ Next Level';
     const nextBtn = this.add.text(width / 2, 560, btnText, {
       fontSize: '34px', fill: '#ffffff', backgroundColor: '#334488',

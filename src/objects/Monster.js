@@ -1,4 +1,3 @@
-import Projectile from './Projectile.js';
 
 export default class Monster extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y, level) {

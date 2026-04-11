@@ -75,8 +75,12 @@ export default class HUDScene extends Phaser.Scene {
 
   _setupRegistryListeners() {
     const r = this.game.registry;
-    r.events.on('changedata', (parent, key, value) => {
+    this._registryHandler = (parent, key, value) => {
       this._onRegistryChange(key, value);
+    };
+    r.events.on('changedata', this._registryHandler);
+    this.events.once('shutdown', () => {
+      r.events.off('changedata', this._registryHandler);
     });
   }
 
