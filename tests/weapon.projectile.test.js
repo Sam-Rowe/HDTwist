@@ -8,7 +8,10 @@ beforeAll(async () => {
   globalThis.Phaser = {
     Physics: {
       Arcade: {
-        Sprite: class {}
+        Sprite: class {
+          setVelocity() {}
+          destroy() {}
+        }
       }
     },
     Input: {
@@ -52,36 +55,31 @@ describe('CHARACTER_DATA weapon config', () => {
 // ─── Projectile lifespan ─────────────────────────────────────────────────────
 
 describe('Projectile lifespan', () => {
-  function buildProjectileStub(config = {}) {
+  function buildScene() {
     const delayedCall = vi.fn((ms, cb) => ({ remove: vi.fn(), delay: ms, callback: cb }));
     const scene = {
       add: { existing: vi.fn() },
-      physics: { add: { existing: vi.fn() } },
+      physics: {
+        add: {
+          existing: vi.fn((sprite) => {
+            sprite.body = { setAllowGravity: vi.fn() };
+          })
+        }
+      },
       time: { delayedCall }
     };
-
-    const proj = Object.create(Projectile.prototype);
-    proj.scene = scene;
-    proj.damage = config.damage || 10;
-    proj.speed = config.speed || 400;
-    proj.fromPlayer = config.fromPlayer !== undefined ? config.fromPlayer : true;
-    proj.direction = config.direction || 1;
-    proj.velocityX = config.velocityX || config.direction * config.speed || 400;
-    proj.velocityY = config.velocityY || 0;
-    proj.body = { setAllowGravity: vi.fn() };
-    proj.setVelocity = vi.fn();
-    proj.lifeTimer = scene.time.delayedCall(config.lifespan || 3000, () => {});
-
-    return { proj, delayedCall, scene };
+    return { scene, delayedCall };
   }
 
   it('uses the provided lifespan for the destroy timer', () => {
-    const { delayedCall } = buildProjectileStub({ lifespan: 5000 });
+    const { scene, delayedCall } = buildScene();
+    new Projectile(scene, 0, 0, 'key', { lifespan: 5000 });
     expect(delayedCall).toHaveBeenCalledWith(5000, expect.any(Function));
   });
 
   it('defaults to 3000 ms lifespan when none is provided', () => {
-    const { delayedCall } = buildProjectileStub({});
+    const { scene, delayedCall } = buildScene();
+    new Projectile(scene, 0, 0, 'key', {});
     expect(delayedCall).toHaveBeenCalledWith(3000, expect.any(Function));
   });
 });

@@ -12,7 +12,13 @@ export default class Projectile extends Phaser.Physics.Arcade.Sprite {
     scene.physics.add.existing(this);
     this.body.setAllowGravity(false);
     this.setVelocity(this.velocityX, this.velocityY);
-    this.lifeTimer = scene.time.delayedCall(config.lifespan || 3000, () => { this.destroySelf(); });
+    const lifespan = typeof config.lifespan === 'number' && config.lifespan >= 0
+      ? config.lifespan
+      : (config.lifespan ?? 3000);
+    this.lifeTimer = scene.time.delayedCall(
+      typeof lifespan === 'number' && lifespan >= 0 ? lifespan : 3000,
+      () => { this.destroySelf(); }
+    );
   }
 
   destroySelf() {
