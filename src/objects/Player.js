@@ -170,7 +170,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.specialCooldownTimer) this.specialCooldownTimer.remove();
     this.specialCooldownTimer = this.scene.time.delayedCall(60000, () => {
       this.specialCooldown = false;
+      this.specialCooldownTimer = null;
       this.scene.game.registry.set('specialCooldown', false);
+      this.scene.game.registry.set('specialCooldownLeft', 0);
     });
   }
 
