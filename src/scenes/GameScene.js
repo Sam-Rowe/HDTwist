@@ -219,20 +219,12 @@ export default class GameScene extends Phaser.Scene {
 
     // Enemies touch player
     this.physics.add.overlap(this.enemies, this.player, (enemy, player) => {
-      if (enemy.active && !enemy.isDead && !enemy.attackCooldown) {
-        enemy.attackCooldown = true;
-        player.takeDamage(enemy.damage);
-        this.time.delayedCall(800, () => { if (enemy.active) enemy.attackCooldown = false; });
-      }
+      this._applyEnemyContactDamage(enemy, player);
     });
 
     // Water ghosts touch player
     this.physics.add.overlap(this.waterGhosts, this.player, (ghost, player) => {
-      if (ghost.active && !ghost.isDead && !ghost.attackCooldown) {
-        ghost.attackCooldown = true;
-        player.takeDamage(ghost.damage);
-        this.time.delayedCall(900, () => { if (ghost.active) ghost.attackCooldown = false; });
-      }
+      this._applyGhostContactDamage(ghost, player);
     });
 
     // Boss touches player
@@ -277,6 +269,24 @@ export default class GameScene extends Phaser.Scene {
     this.physics.add.collider(this.enemyProjectiles, this.platforms, (proj) => {
       if (proj.active && proj.destroySelf) proj.destroySelf();
     });
+  }
+
+  _applyEnemyContactDamage(enemy, player) {
+    if (!enemy || !player) return;
+    if (enemy.active && !enemy.isDead && !enemy.attackCooldown) {
+      enemy.attackCooldown = true;
+      player.takeDamage(enemy.damage);
+      this.time.delayedCall(800, () => { if (enemy.active) enemy.attackCooldown = false; });
+    }
+  }
+
+  _applyGhostContactDamage(ghost, player) {
+    if (!ghost || !player) return;
+    if (ghost.active && !ghost.isDead && !ghost.attackCooldown) {
+      ghost.attackCooldown = true;
+      player.takeDamage(ghost.damage);
+      this.time.delayedCall(900, () => { if (ghost.active) ghost.attackCooldown = false; });
+    }
   }
 
   playerDied() {
@@ -331,10 +341,26 @@ export default class GameScene extends Phaser.Scene {
 
     // Update enemies
     this.enemies.getChildren().forEach(e => {
-      if (e.active) e.update(this.player);
+      if (!e.active) return;
+      e.update(this.player);
+
+      // Fallback touch check so contact damage still applies even if overlap callbacks miss.
+      const touching = this.physics.world.overlap(this.player, e)
+        || Phaser.Math.Distance.Between(this.player.x, this.player.y, e.x, e.y) < 32;
+      if (touching) {
+        this._applyEnemyContactDamage(e, this.player);
+      }
     });
     this.waterGhosts.getChildren().forEach(wg => {
-      if (wg.active) wg.update(this.player, time);
+      if (!wg.active) return;
+      wg.update(this.player, time);
+
+      // Water ghosts float and can desync body positions briefly; keep contact damage reliable.
+      const touching = this.physics.world.overlap(this.player, wg)
+        || Phaser.Math.Distance.Between(this.player.x, this.player.y, wg.x, wg.y) < 36;
+      if (touching) {
+        this._applyGhostContactDamage(wg, this.player);
+      }
     });
 
     // Update boss
