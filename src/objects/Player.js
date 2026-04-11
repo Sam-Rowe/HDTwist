@@ -118,7 +118,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     const speed = this.charData.projectileSpeed;
 
     const proj = new Projectile(this.scene, this.x + dir * 20, this.y, projKey, {
-      damage, speed, direction: dir, velocityX: dir * speed, fromPlayer: true
+      damage, speed, direction: dir, velocityX: dir * speed, fromPlayer: true,
+      lifespan: this.charData.projectileLifespan
     });
     if (this.scene.playerProjectiles) {
       this.scene.playerProjectiles.add(proj);
@@ -213,7 +214,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     directions.forEach(dir => {
       const proj = new Projectile(this.scene, this.x, this.y, 'proj_mofasuuu', {
         damage, speed, direction: dir.x >= 0 ? 1 : -1,
-        velocityX: dir.x * speed, velocityY: dir.y * speed, fromPlayer: true
+        velocityX: dir.x * speed, velocityY: dir.y * speed, fromPlayer: true,
+        lifespan: this.charData.projectileLifespan
       });
       if (this.scene.playerProjectiles) this.scene.playerProjectiles.add(proj);
     });
