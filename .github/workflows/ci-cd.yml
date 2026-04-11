@@ -1,0 +1,73 @@
+name: CI/CD
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  # ── Continuous Integration ───────────────────────────────────────────────────
+  ci:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build game
+        run: npm run build
+
+      - name: Run unit tests
+        run: npm run test --if-present
+
+  # ── Continuous Deployment ────────────────────────────────────────────────────
+  deploy:
+    name: Production Build & Deploy (GitHub Pages)
+    runs-on: ubuntu-latest
+    needs: ci
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Production build
+        run: npm run build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Mock deploy to GitHub Pages (placeholder)
+        run: |
+          echo "=== Mock GitHub Pages Deployment ==="
+          echo "In a real deployment this step would push the contents of 'dist/' to the gh-pages branch."
+          echo "Built files ready for GitHub Pages:"
+          ls -lh dist/
+          echo "Deploy complete (mocked)."
