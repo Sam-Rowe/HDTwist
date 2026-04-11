@@ -107,6 +107,20 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.scene.game.registry.set('coins', this.coins);
   }
 
+  rechargeSpecial() {
+    if (!this.specialCooldown) return false;
+
+    this.specialCooldown = false;
+    if (this.specialCooldownTimer) {
+      this.specialCooldownTimer.remove();
+      this.specialCooldownTimer = null;
+    }
+
+    this.scene.game.registry.set('specialCooldown', false);
+    this.scene.game.registry.set('specialCooldownLeft', 0);
+    return true;
+  }
+
   fire() {
     if (!this.canFire) return;
     this.canFire = false;
@@ -157,7 +171,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.specialCooldownTimer) this.specialCooldownTimer.remove();
     this.specialCooldownTimer = this.scene.time.delayedCall(60000, () => {
       this.specialCooldown = false;
+      this.specialCooldownTimer = null;
       this.scene.game.registry.set('specialCooldown', false);
+      this.scene.game.registry.set('specialCooldownLeft', 0);
     });
   }
 
