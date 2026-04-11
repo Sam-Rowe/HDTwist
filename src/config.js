@@ -21,8 +21,9 @@ export const CHARACTER_DATA = {
     weapon: 'hairbrush',
     projectileKey: 'proj_princess',
     projectileColor: 0xff69b4,
-    projectileDamage: 15,
+    projectileDamage: 25,
     projectileSpeed: 400,
+    projectileLifespan: 3000,
     special: {
       name: 'Gerbil Kingdom',
       description: 'Summons gerbils to attack enemies!',
@@ -39,6 +40,7 @@ export const CHARACTER_DATA = {
     projectileColor: 0xc0c0c0,
     projectileDamage: 40,
     projectileSpeed: 350,
+    projectileLifespan: 3000,
     special: {
       name: 'Ignite Sword',
       description: '10x damage for 30 seconds!',
@@ -55,6 +57,7 @@ export const CHARACTER_DATA = {
     projectileColor: 0x0000ff,
     projectileDamage: 20,
     projectileSpeed: 450,
+    projectileLifespan: 3000,
     special: {
       name: 'Ring of Fire',
       description: 'Fires magic in all directions!',
@@ -71,6 +74,7 @@ export const CHARACTER_DATA = {
     projectileColor: 0xff4500,
     projectileDamage: 25,
     projectileSpeed: 380,
+    projectileLifespan: 3000,
     special: {
       name: 'Dragon Heal',
       description: 'Heals 50 HP instantly!',
