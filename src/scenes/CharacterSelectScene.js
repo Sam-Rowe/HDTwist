@@ -90,35 +90,6 @@ export default class CharacterSelectScene extends Phaser.Scene {
     zone.on('pointerdown', () => {
       this.selectedCharacter = charKey;
       this.game.registry.set('selectedCharacter', charKey);
-      this.game.registry.set('coins', 0);
-      this.game.registry.set('upgrades', { jump: 0, weapon: 0, armor: 0, skin: 0 });
-      this.game.registry.set('currentLevel', 1);
-      this.game.registry.set('score', 0);
-
-      // Redraw all cards
-      this.scene.restart();
-
-      // Actually start the game after restart would lose state, so use this:
-    });
-
-    // If this is the selected character, highlight
-    if (this.selectedCharacter === charKey) {
-      card.clear();
-      card.fillStyle(0x2a2a3e); card.fillRoundedRect(cx - cardW / 2, cy - cardH / 2, cardW, cardH, 12);
-      card.lineStyle(4, 0xffff00, 1); card.strokeRoundedRect(cx - cardW / 2, cy - cardH / 2, cardW, cardH, 12);
-      sprite.setScale(3.0);
-
-      this.startBtn.setStyle({ fill: '#ffffff', backgroundColor: '#334488' });
-      this.startBtn.setText('▶ START GAME');
-      this.startBtn.setInteractive({ useHandCursor: true });
-      this.startBtn.on('pointerdown', () => {
-        this.scene.start('GameScene');
-      });
-    }
-
-    zone.on('pointerdown', () => {
-      this.selectedCharacter = charKey;
-      this.game.registry.set('selectedCharacter', charKey);
       if (!this.game.registry.get('coins')) {
         this.game.registry.set('coins', 0);
         this.game.registry.set('upgrades', { jump: 0, weapon: 0, armor: 0, skin: 0 });
@@ -127,6 +98,14 @@ export default class CharacterSelectScene extends Phaser.Scene {
       }
       this._updateStartButton();
     });
+
+    // If this is the selected character, highlight
+    if (this.selectedCharacter === charKey) {
+      card.clear();
+      card.fillStyle(0x2a2a3e); card.fillRoundedRect(cx - cardW / 2, cy - cardH / 2, cardW, cardH, 12);
+      card.lineStyle(4, 0xffff00, 1); card.strokeRoundedRect(cx - cardW / 2, cy - cardH / 2, cardW, cardH, 12);
+      sprite.setScale(3.0);
+    }
   }
 
   _updateStartButton() {

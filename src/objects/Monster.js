@@ -36,7 +36,7 @@ export default class Monster extends Phaser.Physics.Arcade.Sprite {
     this.isDead = true;
     // Chance to drop coin
     if (Math.random() < 0.4) {
-      const coin = this.scene.spawnCoin(this.x, this.y);
+      this.scene.spawnCoin(this.x, this.y);
     }
     this.scene.tweens.add({
       targets: this, alpha: 0, y: this.y - 20, duration: 300,
