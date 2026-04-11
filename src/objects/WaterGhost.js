@@ -11,6 +11,7 @@ export default class WaterGhost extends Phaser.Physics.Arcade.Sprite {
     this.shootRange = 400;
     this.isDead = false;
     this.canShoot = true;
+    this.attackCooldown = false;
     this.shootInterval = Math.max(1500, 3000 - level * 80);
     this.floatOffset = Math.random() * Math.PI * 2;
     this.startY = y;

@@ -226,6 +226,15 @@ export default class GameScene extends Phaser.Scene {
       }
     });
 
+    // Water ghosts touch player
+    this.physics.add.overlap(this.waterGhosts, this.player, (ghost, player) => {
+      if (ghost.active && !ghost.isDead && !ghost.attackCooldown) {
+        ghost.attackCooldown = true;
+        player.takeDamage(ghost.damage);
+        this.time.delayedCall(900, () => { if (ghost.active) ghost.attackCooldown = false; });
+      }
+    });
+
     // Boss touches player
     if (this.boss) {
       this.physics.add.overlap(this.boss, this.player, (boss, player) => {

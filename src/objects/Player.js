@@ -81,7 +81,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
   takeDamage(amount) {
     if (this.isInvincible || !this.active) return;
     const reduction = this.getArmorReduction();
-    const actualDamage = Math.floor(amount * (1 - reduction));
+    const reducedDamage = Math.floor(amount * (1 - reduction));
+    const actualDamage = amount > 0 ? Math.max(1, reducedDamage) : 0;
     this.health = Math.max(0, this.health - actualDamage);
     this.isInvincible = true;
     this.setAlpha(0.5);
