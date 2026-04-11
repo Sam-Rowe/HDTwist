@@ -38,6 +38,7 @@ export default class LevelCompleteScene extends Phaser.Scene {
 
     // "LEVEL COMPLETE!" text
     const brightness = Math.min(1, 0.3 + prevLevel / 20);
+    // Levels 16+ use vibrant neon colours — switch to bright yellow text for contrast
     const textColor = colorIdx >= 15 ? '#ffff00' : '#ffffff';
     const strokeColor = colors.accent;
 

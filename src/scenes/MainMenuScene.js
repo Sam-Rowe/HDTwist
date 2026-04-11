@@ -60,7 +60,7 @@ export default class MainMenuScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     // Character name decorations (corners)
-    const chars = ['Princess Z', 'Selena the Dragon Slayer', 'Mofasuuu', 'King of Dragons!'];
+    const chars = ['Princess Z', 'Selena the Dragon Slayer', 'Mofasuuu', 'The King of all Dragons!'];
     const positions = [[80, 80], [width - 80, 80], [80, height - 80], [width - 80, height - 80]];
     chars.forEach((name, i) => {
       this.add.text(positions[i][0], positions[i][1], name, {
