@@ -59,4 +59,30 @@ describe('Player.takeDamage', () => {
 
     expect(player.health).toBe(10);
   });
+
+  it('recharges the special when it is on cooldown', () => {
+    const { player, registrySet } = buildPlayerStub({ health: 10, armorLevel: 0 });
+    const remove = vi.fn();
+
+    player.specialCooldown = true;
+    player.specialCooldownTimer = { remove };
+
+    expect(player.rechargeSpecial()).toBe(true);
+    expect(player.specialCooldown).toBe(false);
+    expect(player.specialCooldownTimer).toBeNull();
+    expect(remove).toHaveBeenCalledTimes(1);
+    expect(registrySet).toHaveBeenCalledWith('specialCooldown', false);
+    expect(registrySet).toHaveBeenCalledWith('specialCooldownLeft', 0);
+  });
+
+  it('does not recharge the special when it is already ready', () => {
+    const { player, registrySet } = buildPlayerStub({ health: 10, armorLevel: 0 });
+
+    player.specialCooldown = false;
+    player.specialCooldownTimer = { remove: vi.fn() };
+
+    expect(player.rechargeSpecial()).toBe(false);
+    expect(player.specialCooldownTimer.remove).not.toHaveBeenCalled();
+    expect(registrySet).not.toHaveBeenCalledWith('specialCooldown', false);
+  });
 });

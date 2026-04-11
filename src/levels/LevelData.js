@@ -82,7 +82,7 @@ export const LEVELS = [
       { x: 2750, y: 530 }
     ],
     npcs: [
-      { x: 150, y: 640, dialog: ['The darkness grows here...', 'Barrels give coins when you jump over them!', 'Buy upgrades at the shop door.'] }
+      { x: 150, y: 640, dialog: ['The darkness grows here...', 'Barrels give coins when you land on top of them!', 'Buy upgrades at the shop door.'] }
     ],
     doorX: 3250,
     hasBoss: false,

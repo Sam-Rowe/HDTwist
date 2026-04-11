@@ -82,7 +82,7 @@ export default class GameOverScene extends Phaser.Scene {
     this.time.delayedCall(1500, () => {
       const tips = [
         'Tip: Buy upgrades at shop doors!',
-        'Tip: Jump over barrels for bonus coins!',
+        'Tip: Land on barrels for bonus coins!',
         'Tip: Duck with S to avoid projectiles!',
         'Tip: Use your special power more often!',
         'Tip: Talk to NPCs for story hints!'

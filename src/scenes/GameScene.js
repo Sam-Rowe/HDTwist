@@ -60,7 +60,6 @@ export default class GameScene extends Phaser.Scene {
 
     // Barrels
     this.barrels = this.physics.add.staticGroup();
-    this.barrelJumpZones = this.physics.add.group();
     this._spawnBarrels();
 
     // Coins
@@ -148,17 +147,9 @@ export default class GameScene extends Phaser.Scene {
 
   _spawnBarrels() {
     this.levelData.barrels.forEach(b => {
-      const barrel = this.physics.add.staticImage(b.x, b.y, 'barrel');
+      const barrel = this.barrels.create(b.x, b.y, 'barrel');
+      barrel.rewardClaimed = false;
       barrel.refreshBody();
-      this.barrels.add(barrel);
-
-      // Jump zone above barrel
-      const zone = this.add.zone(b.x, b.y - 50, 60, 40);
-      this.physics.add.existing(zone, false);
-      zone.body.setAllowGravity(false);
-      zone.barrelX = b.x;
-      zone.jumped = false;
-      this.barrelJumpZones.add(zone);
     });
   }
 
@@ -180,6 +171,62 @@ export default class GameScene extends Phaser.Scene {
     const coin = new Coin(this, x, y);
     this.coinGroup.add(coin);
     return coin;
+  }
+
+  _didPlayerLandOnBarrel(player, barrel) {
+    if (!player?.body || !barrel?.body) return false;
+
+    const playerBody = player.body;
+    const barrelTop = barrel.body.top ?? barrel.body.y ?? barrel.y;
+    const playerHeight = playerBody.height ?? 0;
+    const previousY = playerBody.prev?.y ?? playerBody.y;
+    const previousBottom = previousY + playerHeight;
+    const currentBottom = playerBody.bottom ?? (playerBody.y + playerHeight);
+    const isTouchingTop = Boolean(playerBody.touching?.down);
+
+    return isTouchingTop
+      && playerBody.velocity.y >= 0
+      && previousBottom <= barrelTop + 10
+      && currentBottom <= barrelTop + 14;
+  }
+
+  _rollBarrelRechargeChance() {
+    return Math.random() < 0.2;
+  }
+
+  _tryRechargePlayerSpecial(player) {
+    if (!player?.specialCooldown || !player.rechargeSpecial) return false;
+    if (!this._rollBarrelRechargeChance()) return false;
+    return player.rechargeSpecial();
+  }
+
+  _showBarrelRewardText(x, y, specialRecharged) {
+    const message = specialRecharged ? '+1 Coin\nSpecial Ready' : '+1 Coin';
+    const txt = this.add.text(x, y - 42, message, {
+      fontSize: '14px', fill: '#ffd700', fontStyle: 'bold', align: 'center'
+    }).setOrigin(0.5).setDepth(15);
+
+    this.tweens.add({
+      targets: txt,
+      y: txt.y - 40,
+      alpha: 0,
+      duration: 1000,
+      onComplete: () => txt.destroy()
+    });
+  }
+
+  _handlePlayerBarrelCollision(player, barrel) {
+    if (!player || !barrel || barrel.rewardClaimed) return;
+    if (!this._didPlayerLandOnBarrel(player, barrel)) return;
+
+    barrel.rewardClaimed = true;
+    player.addCoin();
+
+    const specialRecharged = this._tryRechargePlayerSpecial(player);
+
+    this.levelScore += 15;
+    this.game.registry.set('score', (this.game.registry.get('score') || 0) + 15);
+    this._showBarrelRewardText(barrel.x, barrel.y, specialRecharged);
   }
 
   _setupColliders() {
@@ -247,20 +294,8 @@ export default class GameScene extends Phaser.Scene {
       }
     });
 
-    // Barrel jump zones
-    this.physics.add.overlap(this.player, this.barrelJumpZones, (player, zone) => {
-      if (!zone.jumped && !player.body.blocked.down && player.body.velocity.y < 0) {
-        zone.jumped = true;
-        player.addCoin();
-        this.levelScore += 15;
-        this.game.registry.set('score', (this.game.registry.get('score') || 0) + 15);
-        // Show coin popup
-        const txt = this.add.text(zone.x, zone.y - 20, '🪙 Barrel Jump!', {
-          fontSize: '14px', fill: '#ffd700', fontStyle: 'bold'
-        }).setOrigin(0.5).setDepth(15);
-        this.tweens.add({ targets: txt, y: zone.y - 60, alpha: 0, duration: 1000, onComplete: () => txt.destroy() });
-      }
-    });
+    // Barrels behave like solid mini-platforms and reward top landings once.
+    this.physics.add.collider(this.player, this.barrels, this._handlePlayerBarrelCollision, undefined, this);
 
     // Projectiles destroy on platforms
     this.physics.add.collider(this.playerProjectiles, this.platforms, (proj) => {

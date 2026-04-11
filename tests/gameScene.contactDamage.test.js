@@ -56,4 +56,139 @@ describe('GameScene contact damage helpers', () => {
     expect(ghost.attackCooldown).toBe(true);
     expect(scene.time.delayedCall).toHaveBeenCalledTimes(1);
   });
+
+  it('detects when the player lands on top of a barrel', () => {
+    const scene = Object.create(GameScene.prototype);
+
+    const player = {
+      body: {
+        y: 120,
+        prev: { y: 112 },
+        height: 44,
+        bottom: 164,
+        touching: { down: true },
+        velocity: { y: 220 }
+      }
+    };
+
+    const barrel = {
+      body: { top: 164 }
+    };
+
+    expect(scene._didPlayerLandOnBarrel(player, barrel)).toBe(true);
+  });
+
+  it('does not treat side contact as a barrel landing', () => {
+    const scene = Object.create(GameScene.prototype);
+
+    const player = {
+      body: {
+        y: 120,
+        prev: { y: 120 },
+        height: 44,
+        bottom: 164,
+        touching: { down: false },
+        velocity: { y: 0 }
+      }
+    };
+
+    const barrel = {
+      body: { top: 164 }
+    };
+
+    expect(scene._didPlayerLandOnBarrel(player, barrel)).toBe(false);
+  });
+
+  it('rewards a barrel landing with a coin, score, and recharge attempt', () => {
+    const scene = Object.create(GameScene.prototype);
+    const registrySet = vi.fn();
+
+    scene.levelScore = 0;
+    scene.game = {
+      registry: {
+        get: vi.fn((key) => (key === 'score' ? 40 : 0)),
+        set: registrySet
+      }
+    };
+    scene._didPlayerLandOnBarrel = vi.fn(() => true);
+    scene._tryRechargePlayerSpecial = vi.fn(() => true);
+    scene._showBarrelRewardText = vi.fn();
+
+    const player = { addCoin: vi.fn() };
+    const barrel = { rewardClaimed: false, x: 320, y: 600 };
+
+    scene._handlePlayerBarrelCollision(player, barrel);
+
+    expect(barrel.rewardClaimed).toBe(true);
+    expect(player.addCoin).toHaveBeenCalledTimes(1);
+    expect(scene._tryRechargePlayerSpecial).toHaveBeenCalledWith(player);
+    expect(scene.levelScore).toBe(15);
+    expect(registrySet).toHaveBeenCalledWith('score', 55);
+    expect(scene._showBarrelRewardText).toHaveBeenCalledWith(320, 600, true);
+  });
+
+  it('recharges the special on a successful barrel recharge roll', () => {
+    const scene = Object.create(GameScene.prototype);
+    const player = {
+      specialCooldown: true,
+      rechargeSpecial: vi.fn(() => true)
+    };
+
+    scene._rollBarrelRechargeChance = vi.fn(() => true);
+
+    expect(scene._tryRechargePlayerSpecial(player)).toBe(true);
+    expect(scene._rollBarrelRechargeChance).toHaveBeenCalledTimes(1);
+    expect(player.rechargeSpecial).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not recharge the special when the barrel recharge roll fails', () => {
+    const scene = Object.create(GameScene.prototype);
+    const player = {
+      specialCooldown: true,
+      rechargeSpecial: vi.fn(() => true)
+    };
+
+    scene._rollBarrelRechargeChance = vi.fn(() => false);
+
+    expect(scene._tryRechargePlayerSpecial(player)).toBe(false);
+    expect(scene._rollBarrelRechargeChance).toHaveBeenCalledTimes(1);
+    expect(player.rechargeSpecial).not.toHaveBeenCalled();
+  });
+
+  it('does not attempt a barrel recharge when the special is already ready', () => {
+    const scene = Object.create(GameScene.prototype);
+    const player = {
+      specialCooldown: false,
+      rechargeSpecial: vi.fn(() => true)
+    };
+
+    scene._rollBarrelRechargeChance = vi.fn(() => true);
+
+    expect(scene._tryRechargePlayerSpecial(player)).toBe(false);
+    expect(scene._rollBarrelRechargeChance).not.toHaveBeenCalled();
+    expect(player.rechargeSpecial).not.toHaveBeenCalled();
+  });
+
+  it('does not reward the same barrel more than once', () => {
+    const scene = Object.create(GameScene.prototype);
+
+    scene.game = {
+      registry: {
+        get: vi.fn(() => 0),
+        set: vi.fn()
+      }
+    };
+    scene._didPlayerLandOnBarrel = vi.fn(() => true);
+    scene._tryRechargePlayerSpecial = vi.fn();
+    scene._showBarrelRewardText = vi.fn();
+
+    const player = { addCoin: vi.fn() };
+    const barrel = { rewardClaimed: true, x: 320, y: 600 };
+
+    scene._handlePlayerBarrelCollision(player, barrel);
+
+    expect(player.addCoin).not.toHaveBeenCalled();
+    expect(scene._tryRechargePlayerSpecial).not.toHaveBeenCalled();
+    expect(scene.game.registry.set).not.toHaveBeenCalled();
+  });
 });
