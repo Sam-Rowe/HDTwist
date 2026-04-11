@@ -325,6 +325,12 @@ export default class GameScene extends Phaser.Scene {
   }
 
   playerDied() {
+    if (this._playerDying) return;
+    this._playerDying = true;
+    if (this.player && this.player.body) {
+      this.player.body.enable = false;
+      this.player.setActive(false);
+    }
     this.game.registry.set('playerHealth', 0);
     this.game.registry.set('levelReached', this.levelData.id);
     this.scene.stop('HUDScene');
@@ -379,10 +385,8 @@ export default class GameScene extends Phaser.Scene {
       if (!e.active) return;
       e.update(this.player);
 
-      // Fallback touch check so contact damage still applies even if overlap callbacks miss.
-      const touching = this.physics.world.overlap(this.player, e)
-        || Phaser.Math.Distance.Between(this.player.x, this.player.y, e.x, e.y) < 32;
-      if (touching) {
+      // Fallback distance check so contact damage still applies even if overlap callbacks miss.
+      if (Phaser.Math.Distance.Between(this.player.x, this.player.y, e.x, e.y) < 32) {
         this._applyEnemyContactDamage(e, this.player);
       }
     });
@@ -391,9 +395,7 @@ export default class GameScene extends Phaser.Scene {
       wg.update(this.player, time);
 
       // Water ghosts float and can desync body positions briefly; keep contact damage reliable.
-      const touching = this.physics.world.overlap(this.player, wg)
-        || Phaser.Math.Distance.Between(this.player.x, this.player.y, wg.x, wg.y) < 36;
-      if (touching) {
+      if (Phaser.Math.Distance.Between(this.player.x, this.player.y, wg.x, wg.y) < 36) {
         this._applyGhostContactDamage(wg, this.player);
       }
     });

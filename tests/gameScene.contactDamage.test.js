@@ -192,3 +192,48 @@ describe('GameScene contact damage helpers', () => {
     expect(scene.game.registry.set).not.toHaveBeenCalled();
   });
 });
+
+describe('GameScene.playerDied', () => {
+  function buildSceneForDeath() {
+    const scene = Object.create(GameScene.prototype);
+    scene._playerDying = false;
+    scene.levelData = { id: 1 };
+
+    const registrySet = vi.fn();
+    scene.game = { registry: { set: registrySet } };
+    scene.scene = {
+      stop: vi.fn(),
+      start: vi.fn()
+    };
+    scene.player = {
+      body: { enable: true },
+      setActive: vi.fn()
+    };
+
+    return { scene, registrySet };
+  }
+
+  it('transitions to GameOverScene and disables the player on first call', () => {
+    const { scene, registrySet } = buildSceneForDeath();
+
+    scene.playerDied();
+
+    expect(registrySet).toHaveBeenCalledWith('playerHealth', 0);
+    expect(registrySet).toHaveBeenCalledWith('levelReached', 1);
+    expect(scene.scene.stop).toHaveBeenCalledWith('HUDScene');
+    expect(scene.scene.start).toHaveBeenCalledWith('GameOverScene');
+    expect(scene.player.body.enable).toBe(false);
+    expect(scene.player.setActive).toHaveBeenCalledWith(false);
+    expect(scene._playerDying).toBe(true);
+  });
+
+  it('does not trigger a second scene transition if called again while dying', () => {
+    const { scene } = buildSceneForDeath();
+
+    scene.playerDied();
+    scene.playerDied();
+
+    expect(scene.scene.stop).toHaveBeenCalledTimes(1);
+    expect(scene.scene.start).toHaveBeenCalledTimes(1);
+  });
+});
