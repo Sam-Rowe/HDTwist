@@ -7,6 +7,10 @@ export default class CharacterSelectScene extends Phaser.Scene {
   }
 
   create() {
+    // Re-read selected character from registry on every create() so the scene
+    // works correctly when restarted (e.g. after "Play Again" from the win screen).
+    this.selectedCharacter = this.game.registry.get('selectedCharacter') || null;
+
     const { width, height } = this.cameras.main;
 
     this.add.rectangle(width / 2, height / 2, width, height, 0x0a0a1a);
@@ -41,6 +45,12 @@ export default class CharacterSelectScene extends Phaser.Scene {
       fontSize: '26px', fill: '#666688', backgroundColor: '#222233',
       padding: { x: 20, y: 10 }
     }).setOrigin(0.5);
+
+    // If a character was already selected (e.g. after "Play Again"), activate the
+    // start button immediately so the player isn't stuck on this screen.
+    if (this.selectedCharacter) {
+      this._updateStartButton();
+    }
   }
 
   _createCard(cx, cy, cardW, cardH, charKey, data, index) {

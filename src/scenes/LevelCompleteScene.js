@@ -79,6 +79,7 @@ export default class LevelCompleteScene extends Phaser.Scene {
       if (isLastLevel) {
         this.game.registry.set('currentLevel', 1);
         this.game.registry.set('score', 0);
+        this.game.registry.set('playerHealth', 100);
         this.scene.start('CharacterSelectScene');
       } else {
         this.scene.start('GameScene');
