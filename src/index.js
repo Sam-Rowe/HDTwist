@@ -34,4 +34,4 @@ const config = {
   ]
 };
 
-window.__phaserGame = new Phaser.Game(config);
+new Phaser.Game(config);

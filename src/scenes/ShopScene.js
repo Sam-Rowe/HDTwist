@@ -48,6 +48,11 @@ export default class ShopScene extends Phaser.Scene {
     closeBtn.on('pointerout', () => closeBtn.setStyle({ fill: '#ffffff' }));
     closeBtn.on('pointerdown', this._closeShop, this);
 
+    // ESC hint
+    this.add.text(width / 2, height / 2 + 255, 'or press ESC', {
+      fontSize: '13px', fill: '#886644'
+    }).setOrigin(0.5);
+
     // ESC to close
     this._boundHandleEsc = this._boundHandleEsc || this._handleEscKey.bind(this);
     this._boundShutdownHandler = this._boundShutdownHandler || this._onShutdown.bind(this);
@@ -102,9 +107,10 @@ export default class ShopScene extends Phaser.Scene {
         fill: canAfford ? '#ffffff' : '#666666',
         backgroundColor: canAfford ? '#335533' : '#222222',
         padding: { x: 10, y: 5 }
-      }).setOrigin(0, 0).setInteractive(canAfford ? { useHandCursor: true } : {});
+      }).setOrigin(0, 0);
 
       if (canAfford) {
+        btn.setInteractive({ useHandCursor: true });
         btn.on('pointerover', () => btn.setStyle({ fill: '#ffff88', backgroundColor: '#557755' }));
         btn.on('pointerout', () => btn.setStyle({ fill: '#ffffff', backgroundColor: '#335533' }));
         btn.on('pointerdown', () => this._buyUpgrade(key, nextData.cost));
