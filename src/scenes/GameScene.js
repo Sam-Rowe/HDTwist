@@ -14,6 +14,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   create() {
+    this._levelComplete = false;
     const levelIndex = (this.game.registry.get('currentLevel') || 1) - 1;
     this.levelData = LEVELS[Math.min(levelIndex, LEVELS.length - 1)];
     this.worldWidth = this.levelData.worldWidth;
@@ -359,8 +360,9 @@ export default class GameScene extends Phaser.Scene {
   }
 
   _checkLevelComplete() {
-    if (!this.player) return;
+    if (!this.player || this._levelComplete) return;
     if (this.player.x > this.levelData.doorX + 80) {
+      this._levelComplete = true;
       // Level complete!
       const currentLevel = this.game.registry.get('currentLevel') || 1;
       this.game.registry.set('completedLevel', currentLevel);
