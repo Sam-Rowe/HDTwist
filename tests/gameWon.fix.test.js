@@ -1,5 +1,5 @@
 /**
- * Tests for the game-won page freeze bug fix.
+ * Tests for the game-won win screen freeze bug fix.
  *
  * Root causes addressed:
  *  1. GameScene._checkLevelComplete fired every frame once the door was passed,
@@ -13,9 +13,6 @@
  */
 
 import { describe, it, expect, vi, beforeAll } from 'vitest';
-import { readFileSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { join, dirname } from 'path';
 
 let GameScene;
 let LevelCompleteScene;
@@ -179,33 +176,64 @@ describe('CharacterSelectScene selectedCharacter restoration', () => {
 // Fix 3 – LevelCompleteScene "Play Again" resets playerHealth
 // ---------------------------------------------------------------------------
 describe('LevelCompleteScene Play Again resets playerHealth', () => {
-  it('includes playerHealth reset in the Play Again registry calls', () => {
-    // Build the minimal scene state that the Play Again handler needs.
-    const registryValues = { currentLevel: 20, playerHealth: 30, score: 405 };
+  function makeLevelCompleteScene(completedLevel) {
+    const registryValues = {
+      completedLevel,
+      currentLevel: completedLevel + 1,
+      playerHealth: 30,
+      score: 405,
+      coinsEarned: 5,
+      levelScore: 100
+    };
     const registryMock = {
-      get: vi.fn((key) => registryValues[key]),
+      get: vi.fn((key) => registryValues[key] ?? 0),
       set: vi.fn((key, val) => { registryValues[key] = val; })
     };
-    const sceneMock = { start: vi.fn() };
 
-    // Directly invoke the logic the button handler runs for isLastLevel.
-    // This mirrors the code in LevelCompleteScene.js nextBtn pointerdown handler.
-    registryMock.set('currentLevel', 1);
-    registryMock.set('score', 0);
-    registryMock.set('playerHealth', 100);
-    sceneMock.start('CharacterSelectScene');
+    // Capture pointerdown callbacks in registration order so tests can invoke
+    // the real nextBtn handler rather than mirroring the source manually.
+    const pointerdownHandlers = [];
+    const makeInteractiveText = () => ({
+      setOrigin: vi.fn().mockReturnThis(),
+      setInteractive: vi.fn().mockReturnThis(),
+      setStyle: vi.fn().mockReturnThis(),
+      // Use a regular function (not arrow) so `return this` refers to the text
+      // mock object itself, enabling fluent chaining in the scene code.
+      on: vi.fn(function (event, cb) {
+        if (event === 'pointerdown') pointerdownHandlers.push(cb);
+        return this;
+      })
+    });
 
+    const scene = Object.create(LevelCompleteScene.prototype);
+    scene.cameras = { main: { width: 1280, height: 720 } };
+    scene.game = { registry: registryMock };
+    scene.scene = { start: vi.fn() };
+    scene.add = {
+      rectangle: vi.fn().mockReturnValue({ setStrokeStyle: vi.fn().mockReturnThis() }),
+      text: vi.fn(() => makeInteractiveText())
+    };
+    scene.tweens = { add: vi.fn() };
+
+    return { scene, registryMock, sceneMock: scene.scene, pointerdownHandlers };
+  }
+
+  it('Play Again button pointerdown resets playerHealth to 100 and starts CharacterSelectScene', () => {
+    const { scene, registryMock, sceneMock, pointerdownHandlers } = makeLevelCompleteScene(20);
+    LevelCompleteScene.prototype.create.call(scene);
+    // nextBtn registers the first pointerdown handler
+    expect(pointerdownHandlers[0]).toBeDefined();
+    pointerdownHandlers[0]();
     expect(registryMock.set).toHaveBeenCalledWith('playerHealth', 100);
-    expect(registryValues['playerHealth']).toBe(100);
+    expect(registryMock.set).toHaveBeenCalledWith('currentLevel', 1);
+    expect(registryMock.set).toHaveBeenCalledWith('score', 0);
     expect(sceneMock.start).toHaveBeenCalledWith('CharacterSelectScene');
   });
 
   it('ensures playerHealth is 100 in registry after Play Again (not stale level-20 HP)', () => {
-    // Confirm the source code actually contains the playerHealth reset call.
-    // This is a code-content assertion so any accidental deletion of the line
-    // will fail the test.
-    const __dirname = dirname(fileURLToPath(import.meta.url));
-    const src = readFileSync(join(__dirname, '../src/scenes/LevelCompleteScene.js'), 'utf8');
-    expect(src).toContain("registry.set('playerHealth', 100)");
+    const { scene, registryMock, pointerdownHandlers } = makeLevelCompleteScene(20);
+    LevelCompleteScene.prototype.create.call(scene);
+    pointerdownHandlers[0]();
+    expect(registryMock.get('playerHealth')).toBe(100);
   });
 });

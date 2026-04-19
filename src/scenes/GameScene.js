@@ -14,6 +14,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   create() {
+    this._levelComplete = false;
     const levelIndex = (this.game.registry.get('currentLevel') || 1) - 1;
     this.levelData = LEVELS[Math.min(levelIndex, LEVELS.length - 1)];
     this.worldWidth = this.levelData.worldWidth;
