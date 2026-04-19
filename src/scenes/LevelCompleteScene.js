@@ -28,10 +28,10 @@ export default class LevelCompleteScene extends Phaser.Scene {
         targets: star, y: y + Phaser.Math.Between(100, 300), alpha: 0,
         duration: Phaser.Math.Between(1500, 3000), delay: Phaser.Math.Between(0, 1000),
         repeat: -1, repeatDelay: Phaser.Math.Between(0, 2000),
-        onRepeat: (tween, targets) => {
-          targets[0].x = Phaser.Math.Between(0, width);
-          targets[0].y = Phaser.Math.Between(-50, 100);
-          targets[0].alpha = 1;
+        onRepeat: (tween, target) => {
+          target.x = Phaser.Math.Between(0, width);
+          target.y = Phaser.Math.Between(-50, 100);
+          target.alpha = 1;
         }
       });
     }

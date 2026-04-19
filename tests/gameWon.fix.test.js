@@ -237,3 +237,68 @@ describe('LevelCompleteScene Play Again resets playerHealth', () => {
     expect(registryMock.get('playerHealth')).toBe(100);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Fix 4 – LevelCompleteScene celebration particle onRepeat callback
+// In Phaser 3.60+ TweenData#dispatchEvent passes the individual target object
+// as the second argument (not the targets array), so onRepeat must use
+// `target` directly instead of `targets[0]`.
+// ---------------------------------------------------------------------------
+describe('LevelCompleteScene celebration particle onRepeat callback', () => {
+  function makeSceneCapturingTweens() {
+    const tweenConfigs = [];
+    const scene = Object.create(LevelCompleteScene.prototype);
+    scene.cameras = { main: { width: 1280, height: 720 } };
+    scene.game = {
+      registry: {
+        get: vi.fn((key) => ({ completedLevel: 1, currentLevel: 2, playerHealth: 80, score: 0, coinsEarned: 0, levelScore: 0 }[key] ?? 0)),
+        set: vi.fn()
+      }
+    };
+    scene.scene = { start: vi.fn() };
+    scene.add = {
+      rectangle: vi.fn().mockReturnValue({ setStrokeStyle: vi.fn().mockReturnThis() }),
+      text: vi.fn().mockReturnValue({
+        setOrigin: vi.fn().mockReturnThis(),
+        setInteractive: vi.fn().mockReturnThis(),
+        setStyle: vi.fn().mockReturnThis(),
+        on: vi.fn().mockReturnThis()
+      })
+    };
+    scene.tweens = { add: vi.fn((cfg) => tweenConfigs.push(cfg)) };
+    return { scene, tweenConfigs };
+  }
+
+  it('onRepeat callback accepts a single target object without throwing', () => {
+    const { scene, tweenConfigs } = makeSceneCapturingTweens();
+    LevelCompleteScene.prototype.create.call(scene);
+
+    // All 30 celebration tweens should be captured
+    const particleTweens = tweenConfigs.filter(cfg => cfg.onRepeat);
+    expect(particleTweens.length).toBe(30);
+
+    // Simulate the Phaser 3.60+ TweenData#dispatchEvent call: second arg is
+    // the individual target object (not an array).
+    const fakeStar = { x: 100, y: 200, alpha: 0 };
+    const fakeTween = {};
+    expect(() => particleTweens[0].onRepeat(fakeTween, fakeStar)).not.toThrow();
+
+    // The callback should have reset the star's position/alpha
+    expect(fakeStar.alpha).toBe(1);
+  });
+
+  it('onRepeat does NOT treat the target as an array (old broken signature)', () => {
+    const { scene, tweenConfigs } = makeSceneCapturingTweens();
+    LevelCompleteScene.prototype.create.call(scene);
+
+    const particleTweens = tweenConfigs.filter(cfg => cfg.onRepeat);
+    const fakeStar = { x: 100, y: 200, alpha: 0 };
+    const fakeTween = {};
+
+    // Calling with the Phaser 3.60+ single-target signature must not throw.
+    // (The old code called targets[0].x which would be undefined and crash.)
+    particleTweens[0].onRepeat(fakeTween, fakeStar);
+    expect(fakeStar.x).toBeDefined();
+    expect(typeof fakeStar.x).toBe('number');
+  });
+});
