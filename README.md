@@ -47,3 +47,11 @@ npm run build    # production build in /dist
   - Player Skin (4 cosmetic tiers)
 - **Enemies** — Monsters (melee), Water Ghosts (ranged, floating), Boss (levels 5 / 10 / 15 / 20)
 - **Boss battles** at levels 5, 10, 15, and 20 with two attack phases
+
+## Contributing
+
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions, coding conventions, and how to open a pull request.
+
+## Licence
+
+This project is released under the [MIT License](LICENSE).
