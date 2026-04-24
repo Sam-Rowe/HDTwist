@@ -18,12 +18,25 @@ Thanks for your interest in contributing to HDTwist! This guide explains how to 
 
 ### Prerequisites
 
-- **Node.js** ≥ 18 and **npm** ≥ 9
+- **Node.js** 20, 22, or 24+ and **npm** ≥ 9
 
 ### Install dependencies
 
+**To run locally only** (no intent to submit changes):
+
 ```bash
 git clone https://github.com/Sam-Rowe/HDTwist.git
+cd HDTwist
+npm install
+```
+
+**To contribute** (fork first, then clone your fork):
+
+1. Click **Fork** on GitHub to create your own copy.
+2. Clone your fork:
+
+```bash
+git clone https://github.com/<your-username>/HDTwist.git
 cd HDTwist
 npm install
 ```
